@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f2">
+  <title>모두의 선반 | 자율 물물 교환소</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #24352e;
+      --muted: #748179;
+      --green: #355e4b;
+      --green-dark: #294b3b;
+      --sage: #e8eee8;
+      --sage-deep: #d7e2d7;
+      --paper: #fff;
+      --canvas: #f5f7f2;
+      --line: #e5e9e3;
+      --gold: #d5a35b;
+      --danger: #a64e43;
+      --shadow: 0 16px 42px rgba(39, 62, 49, .07);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font-size: 16px; line-height: 1.6; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #9ab9a1; outline-offset: 3px;
+    }
+    .shell { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .topbar { height: 74px; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; gap: 11px; align-items: center; font-weight: 800; letter-spacing: -.04em; font-size: 19px; }
+    .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 12px; color: white; background: var(--green); }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .nav-button { border: 1px solid var(--line); border-radius: 999px; background: white; color: var(--ink); padding: 9px 16px; font-size: 14px; font-weight: 700; }
+    .nav-button:hover { border-color: #bac9bd; background: #fbfcfa; }
+    .hero { display: grid; grid-template-columns: 1.15fr .85fr; align-items: center; gap: 36px; padding: 35px 0 44px; }
+    .eyebrow { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+    h1 { margin: 12px 0 14px; font-size: clamp(36px, 5vw, 58px); line-height: 1.12; letter-spacing: -.065em; }
+    .hero-copy { max-width: 520px; color: #64736a; font-size: 17px; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 21px; }
+    .tag { padding: 7px 11px; border-radius: 999px; color: var(--green); background: var(--sage); font-size: 12px; font-weight: 700; }
+    .hero-art { position: relative; min-height: 250px; overflow: hidden; display: grid; place-items: center; border: 1px solid #e8e9df; border-radius: 28px; background: radial-gradient(ellipse at 75% 26%, #e1eadc 0, transparent 39%), linear-gradient(145deg, #f7edda 0%, #e7efdf 100%); }
+    .hero-art::before, .hero-art::after { content: ""; position: absolute; width: 164px; height: 164px; border: 1px solid rgba(53, 94, 75, .12); border-radius: 50%; }
+    .hero-art::after { width: 228px; height: 228px; }
+    .shelf { z-index: 1; width: 205px; padding: 22px 18px; border: 1px solid rgba(67, 82, 61, .1); border-radius: 18px; background: rgba(255,255,255,.82); box-shadow: var(--shadow); text-align: center; transform: rotate(-3deg); }
+    .shelf-icons { display: flex; justify-content: center; gap: 10px; font-size: 34px; }
+    .shelf-line { height: 5px; margin: 12px auto 9px; border-radius: 9px; background: #b89368; }
+    .shelf-label { color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+    .main-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 24px; align-items: start; padding-bottom: 64px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin: 0 0 15px; }
+    .section-heading h2 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+    .section-heading p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .product-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .product-card { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); transition: transform .18s, border-color .18s, box-shadow .18s; }
+    .product-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(39,62,49,.08); }
+    .product-card.is-selected { border: 2px solid var(--green); box-shadow: 0 0 0 3px rgba(53,94,75,.09); }
+    .product-card.is-soldout { opacity: .63; }
+    .product-pic { min-height: 130px; display: grid; place-items: center; position: relative; background: linear-gradient(145deg, #f0eee2, #e6eee6); }
+    .product-pic img { width: 100%; height: 146px; object-fit: cover; }
+    .product-emoji { font-size: 58px; filter: drop-shadow(0 8px 9px rgba(50,60,45,.12)); }
+    .product-body { padding: 14px; }
+    .product-name { margin: 0 0 3px; font-weight: 800; }
+    .product-price { color: var(--green); font-size: 14px; font-weight: 800; }
+    .product-action { width: 100%; margin-top: 12px; padding: 9px; border: 1px solid #dfe7df; border-radius: 10px; color: var(--green); background: #f7faf6; font-size: 13px; font-weight: 800; }
+    .product-card.is-selected .product-action { color: white; border-color: var(--green); background: var(--green); }
+    .product-action:disabled { cursor: not-allowed; color: #787f79; border-color: var(--line); background: #f1f2ef; }
+    .panel { padding: 23px; border: 1px solid var(--line); border-radius: 20px; background: white; box-shadow: var(--shadow); }
+    .panel h2 { margin: 0; font-size: 20px; letter-spacing: -.04em; }
+    .panel-intro { margin: 4px 0 20px; color: var(--muted); font-size: 13px; }
+    .empty-order { display: grid; place-items: center; min-height: 220px; padding: 20px; border: 1px dashed #dce4dc; border-radius: 14px; color: var(--muted); text-align: center; background: #fafbf9; }
+    .empty-order-icon { margin-bottom: 8px; font-size: 32px; }
+    .order-content[hidden], .exchange-fields[hidden], .bank-fields[hidden], .view[hidden] { display: none !important; }
+    .chosen-product { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 13px; background: #f6f8f5; }
+    .chosen-emoji { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 12px; background: #e8eee5; font-size: 25px; }
+    .chosen-name { font-weight: 800; }
+    .chosen-price { color: var(--muted); font-size: 12px; }
+    .field { margin-top: 17px; }
+    .field-label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 800; }
+    .quantity { display: flex; align-items: center; width: max-content; gap: 13px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; }
+    .quantity button { width: 38px; height: 38px; border: 0; border-radius: 9px; color: var(--green); background: var(--sage); font-size: 21px; font-weight: 700; }
+    .quantity button:disabled { cursor: not-allowed; opacity: .42; }
+    .quantity-value { min-width: 25px; text-align: center; font-weight: 800; }
+    .payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .payment-option { min-height: 47px; border: 1px solid var(--line); border-radius: 11px; color: #58675e; background: white; font-size: 13px; font-weight: 800; }
+    .payment-option.active { border-color: var(--green); color: var(--green); background: #eef4ed; }
+    .payment-option:disabled { cursor: not-allowed; color: #9a9f9b; background: #f2f3f1; }
+    .section-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .today-date { white-space: nowrap; }
+    .weekday-note { margin: 9px 0 0; color: var(--green); font-size: 12px; }
+    .weekend-note { margin: 9px 0 0; color: var(--danger); font-size: 12px; font-weight: 700; }
+    .detail-box { margin-top: 12px; padding: 14px; border: 1px solid #edf0eb; border-radius: 13px; background: #fafbf9; }
+    .bank-info-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: center; }
+    .bank-item { min-width: 0; }
+    .bank-label { color: var(--muted); font-size: 11px; }
+    .bank-value { font-size: 13px; font-weight: 800; }
+    .bank-account-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .bank-account-value { min-width: 0; overflow-wrap: anywhere; letter-spacing: .03em; }
+    .copy-button { flex: 0 0 auto; padding: 8px 10px; border: 1px solid #dfe7df; border-radius: 9px; color: var(--green); background: white; font-size: 11px; font-weight: 800; }
+    input[type="text"], input[type="password"], input[type="number"], input[type="url"], select {
+      width: 100%; min-height: 43px; padding: 10px 12px; border: 1px solid #dfe5df; border-radius: 10px; color: var(--ink); background: white;
+    }
+    input[type="file"] { width: 100%; color: var(--muted); font-size: 12px; }
+    .file-help { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin: 19px 0 14px; padding-top: 15px; border-top: 1px dashed #dce3db; font-size: 14px; font-weight: 800; }
+    .total-amount { color: var(--green); font-size: 24px; letter-spacing: -.04em; }
+    .primary-button { width: 100%; min-height: 50px; border: 0; border-radius: 12px; color: white; background: var(--green); font-weight: 800; transition: background .15s; }
+    .primary-button:hover { background: var(--green-dark); }
+    .primary-button:disabled { cursor: not-allowed; background: #9baa9d; }
+    .small-note { margin: 12px 0 0; color: var(--muted); font-size: 11px; text-align: center; }
+    .guide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 3px 0 44px; }
+    .guide-item { padding: 17px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.7); }
+    .guide-item strong { display: block; margin-bottom: 4px; font-size: 13px; }
+    .guide-item span { color: var(--muted); font-size: 12px; }
+    .footer { padding: 20px 0 28px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .prototype-notice { margin-top: 10px; padding: 11px 13px; border-radius: 10px; color: #655235; background: #f4eedf; line-height: 1.55; }
+
+    .admin-wrap { padding: 28px 0 60px; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 18px; }
+    .admin-header h1 { margin: 0; font-size: 31px; }
+    .admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .admin-card { padding: 20px; border: 1px solid var(--line); border-radius: 17px; background: white; }
+    .admin-card h2 { margin: 0 0 14px; font-size: 17px; }
+    .admin-card .field { margin-top: 12px; }
+    .admin-card .primary-button { margin-top: 14px; }
+    .inventory-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; padding: 12px 0; border-bottom: 1px solid #edf0eb; align-items: center; }
+    .inventory-row:last-child { border-bottom: 0; }
+    .inventory-meta { color: var(--muted); font-size: 12px; }
+    .stock-actions { display: flex; gap: 6px; }
+    .stock-actions button, .danger-button, .secondary-button { min-height: 34px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 8px; color: var(--green); background: white; font-size: 12px; font-weight: 700; }
+    .danger-button { color: var(--danger); border-color: #ead8d5; }
+    .secondary-button { margin-top: 8px; }
+    .admin-item-buttons { display: flex; grid-column: 1 / -1; gap: 7px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+    th, td { padding: 10px 9px; border-bottom: 1px solid #edf0eb; text-align: left; }
+    th { color: var(--muted); background: #f8faf7; font-weight: 800; }
+    .login-card { max-width: 410px; margin: 55px auto; }
+    .login-card h1 { margin: 0 0 5px; font-size: 28px; }
+    .login-card p { color: var(--muted); font-size: 13px; }
+    .login-demo { padding: 10px 12px; border-radius: 9px; color: #665435; background: #f5efdf; font-size: 12px; }
+    .empty-history { padding: 25px; color: var(--muted); text-align: center; }
+    .history-exchange { display: flex; align-items: center; gap: 10px; }
+    .history-photo { width: 64px; height: 64px; border: 1px solid var(--line); border-radius: 9px; object-fit: cover; background: #f6f8f5; }
+    .toast { position: fixed; z-index: 10; left: 50%; bottom: 22px; transform: translate(-50%, 18px); opacity: 0; pointer-events: none; padding: 12px 18px; border-radius: 999px; color: white; background: #263d30; box-shadow: 0 8px 25px rgba(0,0,0,.18); font-size: 13px; font-weight: 700; transition: .2s; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    dialog { width: min(440px, calc(100% - 32px)); padding: 26px; border: 0; border-radius: 20px; color: var(--ink); box-shadow: 0 20px 70px rgba(0,0,0,.25); }
+    dialog::backdrop { background: rgba(25, 39, 30, .45); }
+    .receipt-icon { width: 50px; height: 50px; display: grid; place-items: center; border-radius: 50%; color: var(--green); background: var(--sage); font-size: 24px; }
+    dialog h2 { margin: 12px 0 4px; font-size: 22px; }
+    dialog p { color: var(--muted); font-size: 13px; }
+    .receipt-summary { margin: 18px 0; padding: 14px; border-radius: 12px; background: #f6f8f5; font-size: 13px; }
+    .receipt-summary div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+    .receipt-summary strong { text-align: right; }
+
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr .75fr; gap: 20px; }
+      .hero-art { min-height: 220px; }
+      .main-grid { grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; }
+      .panel { padding: 19px; }
+    }
+    @media (max-width: 680px) {
+      .shell { padding: 0 17px; }
+      .topbar { height: 64px; }
+      .hero { grid-template-columns: 1fr; gap: 20px; padding: 26px 0 31px; }
+      .hero-copy { font-size: 15px; }
+      .hero-art { min-height: 170px; }
+      .shelf { padding: 14px 18px; }
+      .shelf-icons { font-size: 28px; }
+      .main-grid { grid-template-columns: 1fr; }
+      .panel { order: -1; }
+      .product-list { gap: 10px; }
+      .product-pic { min-height: 110px; }
+      .product-pic img { height: 120px; }
+      .product-body { padding: 11px; }
+      .guide { grid-template-columns: 1fr; gap: 8px; }
+      .guide-item { padding: 13px 15px; }
+      .guide-item strong { display: inline; margin-right: 7px; }
+      .admin-grid { grid-template-columns: 1fr; }
+      .admin-header h1 { font-size: 25px; }
+      .bank-info-grid { grid-template-columns: minmax(0, .8fr) minmax(0, .8fr) minmax(0, 1.8fr); gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="user-view" class="view">
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 20c-4.4-2.5-6.7-5.3-6.7-8.3A3.7 3.7 0 0 1 12 9.5a3.7 3.7 0 0 1 6.7 2.2c0 3-2.3 5.8-6.7 8.3Z" stroke="currentColor" stroke-width="1.7"/><path d="M12 9.5c0-2.4 1.2-4.2 3.7-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          모두의 선반
+        </div>
+        <button id="open-admin" class="nav-button" type="button">운영자 페이지 ↗</button>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="main-title">
+          <div>
+            <div class="eyebrow">A LITTLE SHELF, A KINDER DAY</div>
+            <h1 id="main-title">필요한 만큼,<br>마음은 가볍게.</h1>
+            <p class="hero-copy">서로의 필요와 비용, 수고를 존중하는 작은 자율 교환 공간입니다. 필요한 물품을 선택하고 이용 방법을 남겨주세요.</p>
+            <div class="hero-tags">
+              <span class="tag">가입 없이 이용</span>
+              <span class="tag">가져간 수량 기록</span>
+              <span class="tag">자율 교환</span>
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="shelf">
+              <div class="shelf-icons"><span>🍜</span><span>🥤</span><span>🍪</span></div>
+              <div class="shelf-line"></div>
+              <div class="shelf-label">TAKE WHAT YOU NEED</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="main-grid" aria-label="물품과 이용 기록">
+          <div>
+            <div class="section-heading">
+              <div><h2>오늘의 선반</h2><p>필요한 물품을 선택해 주세요.</p></div>
+              <div class="section-badges">
+                <time id="today-date" class="tag today-date"></time>
+                <span class="tag">수량은 공개하지 않아요</span>
+              </div>
+            </div>
+            <div id="product-list" class="product-list" aria-live="polite"></div>
+          </div>
+
+          <aside class="panel" aria-labelledby="order-title">
+            <h2 id="order-title">이용 기록 남기기</h2>
+            <p class="panel-intro">개인정보 입력 없이 간단히 기록할 수 있어요.</p>
+            <div id="empty-order" class="empty-order">
+              <div><div class="empty-order-icon" aria-hidden="true">🧺</div><strong>먼저 물품을 골라주세요</strong><br><span>선택한 물품이 여기에 표시됩니다.</span></div>
+            </div>
+            <div id="order-content" class="order-content" hidden>
+              <div class="chosen-product">
+                <span id="chosen-emoji" class="chosen-emoji" aria-hidden="true"></span>
+                <div><div id="chosen-name" class="chosen-name"></div><div id="chosen-price" class="chosen-price"></div></div>
+              </div>
+              <div class="field">
+                <span class="field-label">가져갈 수량</span>
+                <div class="quantity" aria-label="수량 선택">
+                  <button id="quantity-minus" type="button" aria-label="수량 줄이기">−</button>
+                  <span id="quantity-value" class="quantity-value" aria-live="polite">1</span>
+                  <button id="quantity-plus" type="button" aria-label="수량 늘리기">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <span class="field-label">대가 남기기</span>
+                <div class="payment-options" role="group" aria-label="대가 지불 방법">
+                  <button id="payment-bank" class="payment-option active" type="button" aria-pressed="true">계좌이체</button>
+                  <button id="payment-exchange" class="payment-option" type="button" aria-pressed="false">물물교환</button>
+                </div>
+                <p id="weekday-note" class="weekday-note" hidden>평일에는 물물교환도 가능해요. 서로의 필요를 존중해 주세요.</p>
+                <p id="weekend-note" class="weekend-note" hidden>토·일요일에는 계좌이체만 이용할 수 있어요.</p>
+              </div>
+              <div id="bank-fields" class="detail-box bank-fields">
+                <div class="bank-info-grid" aria-label="계좌이체 정보">
+                  <div class="bank-item">
+                    <div class="bank-label">은행명</div>
+                    <div id="bank-name-display" class="bank-value"></div>
+                  </div>
+                  <div class="bank-item">
+                    <div class="bank-label">예금주</div>
+                    <div id="bank-holder-display" class="bank-value"></div>
+                  </div>
+                  <div class="bank-item bank-account-item">
+                    <div class="bank-label">계좌번호</div>
+                    <div class="bank-account-row">
+                      <div id="account-display" class="bank-value bank-account-value"></div>
+                      <button id="copy-account" class="copy-button" type="button" aria-label="계좌번호 복사">복사</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="exchange-fields" class="detail-box exchange-fields" hidden>
+                <label class="field-label" for="exchange-name">교환 물품 이름</label>
+                <input id="exchange-name" type="text" maxlength="80" placeholder="예: 티백 2개, 미사용 볼펜">
+                <div class="field">
+                  <label class="field-label" for="exchange-photo">사진 (선택)</label>
+                  <input id="exchange-photo" type="file" accept="image/*">
+                  <p class="file-help">사진은 이 브라우저에서만 이용 기록과 함께 보관됩니다.</p>
+                </div>
+              </div>
+              <div class="total-row"><span>총 금액</span><span id="total-price" class="total-amount">0원</span></div>
+              <button id="submit-usage" class="primary-button" type="button">이용 기록 완료</button>
+              <p class="small-note">실제 이체 확인은 이루어지지 않습니다.</p>
+            </div>
+          </aside>
+        </section>
+
+        <section aria-labelledby="guide-title">
+          <div class="section-heading"><div><h2 id="guide-title">이용은 이렇게</h2><p>작은 배려가 모두에게 편리한 선반을 만들어요.</p></div></div>
+          <div class="guide">
+            <div class="guide-item"><strong>01 · 필요한 만큼</strong><span>비치된 물품을 확인하고 가져갈 수량을 기록해 주세요.</span></div>
+            <div class="guide-item"><strong>02 · 대가를 남겨요</strong><span>가격은 편의점 판매가보다 200원 더해 운영합니다.</span></div>
+            <div class="guide-item"><strong>03 · 서로 존중해요</strong><span>물물교환은 평일에 자율적으로 이루어지며, 별도 승인은 없습니다.</span></div>
+          </div>
+        </section>
+      </main>
+      <footer class="footer">
+        <strong>모두의 선반</strong> · 서로의 필요와 수고를 존중하는 자율 교환 공간
+        <div class="prototype-notice">프로토타입 안내: 기록과 재고는 현재 사용하는 브라우저에만 저장됩니다. 여러 사람 간 공유, 안전한 운영자 인증 및 서버 백업은 제공되지 않으므로 실제 운영 전 서버 연동이 필요합니다.</div>
+      </footer>
+    </div>
+  </div>
+
+  <div id="login-view" class="view" hidden>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">🌱</span> 모두의 선반</div>
+        <button class="nav-button back-to-user" type="button">← 이용자 페이지</button>
+      </header>
+      <main class="admin-wrap">
+        <section class="admin-card login-card">
+          <div class="eyebrow">SHELF MANAGER</div>
+          <h1>운영자 로그인</h1>
+          <p>운영자 전용 관리 화면입니다.</p>
+          <div class="login-demo">시연용 비밀번호: <strong>admin1234</strong><br>※ 브라우저 안의 데모 인증이며 실제 보안 인증이 아닙니다.</div>
+          <form id="login-form">
+            <div class="field"><label class="field-label" for="admin-password">비밀번호</label><input id="admin-password" type="password" autocomplete="current-password" required></div>
+            <button class="primary-button" type="submit">관리 화면 열기</button>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="admin-view" class="view" hidden>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">🌱</span> 모두의 선반 <span class="tag">운영자</span></div>
+        <div style="display:flex;gap:8px"><button class="nav-button back-to-user" type="button">이용자 페이지</button><button id="logout" class="nav-button" type="button">로그아웃</button></div>
+      </header>
+      <main class="admin-wrap">
+        <div class="admin-header">
+          <div><div class="eyebrow">SHELF MANAGER</div><h1>운영자 대시보드</h1></div>
+          <span id="admin-date" class="tag"></span>
+        </div>
+        <div class="prototype-notice" style="margin:0 0 18px">데모 모드: 이 화면의 인증과 데이터는 브라우저에서만 관리됩니다. 공개 서버에 배포하지 마세요.</div>
+        <div class="admin-grid">
+          <section class="admin-card">
+            <h2>📦 재고 관리</h2>
+            <div id="inventory-list"></div>
+          </section>
+          <section class="admin-card">
+            <h2 id="product-form-title">＋ 물품 등록</h2>
+            <form id="product-form">
+              <input id="edit-product-id" type="hidden">
+              <div class="field"><label class="field-label" for="product-name-input">물품 이름</label><input id="product-name-input" type="text" maxlength="60" required placeholder="예: 컵라면"></div>
+              <div class="field"><label class="field-label" for="product-price-input">판매 가격 (원)</label><input id="product-price-input" type="number" min="0" step="10" required placeholder="예: 1200"></div>
+              <div class="field"><label class="field-label" for="product-stock-input">현재 재고 (개)</label><input id="product-stock-input" type="number" min="0" step="1" required placeholder="예: 8"></div>
+              <div class="field">
+                <label class="field-label" for="product-emoji-preset">목록 아이콘 (이모지)</label>
+                <select id="product-emoji-preset" aria-label="일상용품 카테고리 아이콘 선택">
+                  <option value="">카테고리 아이콘 선택</option>
+                  <option value="🍳">주방용품 🍳</option>
+                  <option value="🍽️">식기·컵 🍽️</option>
+                  <option value="🧹">청소·세탁 🧹</option>
+                  <option value="🧼">욕실·위생 🧼</option>
+                  <option value="✏️">문구·사무 ✏️</option>
+                  <option value="📚">도서·미디어 📚</option>
+                  <option value="👕">의류·패션 👕</option>
+                  <option value="👜">가방·잡화 👜</option>
+                  <option value="🎧">전자·디지털 🎧</option>
+                  <option value="⚽">취미·운동 ⚽</option>
+                </select>
+                <input id="product-emoji-input" type="text" maxlength="8" placeholder="또는 이모지를 직접 입력">
+                <p class="file-help">카테고리를 선택하거나 원하는 이모지를 직접 입력하세요.</p>
+              </div>
+              <div class="field"><label class="field-label" for="product-image-input">사진 주소 (선택)</label><input id="product-image-input" type="url" placeholder="https://..."></div>
+              <button id="save-product" class="primary-button" type="submit">물품 등록</button>
+              <button id="cancel-edit" class="secondary-button" type="button" hidden>수정 취소</button>
+            </form>
+          </section>
+          <section class="admin-card">
+            <h2>🏦 계좌 안내 변경</h2>
+            <form id="bank-form">
+              <div class="field"><label class="field-label" for="bank-name-input">은행명</label><input id="bank-name-input" type="text" maxlength="40" required></div>
+              <div class="field"><label class="field-label" for="bank-holder-input">예금주</label><input id="bank-holder-input" type="text" maxlength="40" required></div>
+              <div class="field"><label class="field-label" for="bank-number-input">계좌번호</label><input id="bank-number-input" type="text" maxlength="40" required></div>
+              <button class="primary-button" type="submit">계좌 정보 저장</button>
+            </form>
+          </section>
+          <section class="admin-card">
+            <h2>🗂 기록 백업</h2>
+            <p class="panel-intro">이 브라우저의 전체 데이터(JSON)를 파일로 저장합니다.</p>
+            <button id="export-data" class="secondary-button" type="button">데이터 백업 다운로드</button>
+            <p class="file-help">브라우저 로컬 저장 데이터는 기기 변경 시 자동으로 이동되지 않습니다.</p>
+          </section>
+        </div>
+        <section class="admin-card" style="margin-top:16px">
+          <div class="section-heading"><div><h2>🧾 이용 기록</h2><p>이용일시, 수량, 대가 방식 및 교환 내역</p></div><span id="history-count" class="tag">0건</span></div>
+          <div id="history-container" class="table-wrap"></div>
+        </section>
+      </main>
+      <footer class="footer"><div class="prototype-notice">관리자 비밀번호와 계좌정보 보호가 필요한 실제 운영 환경에서는 이 단일 파일 방식 대신 서버 측 인증 및 접근 제어를 적용해야 합니다.</div></footer>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <dialog id="receipt-dialog" aria-labelledby="receipt-title">
+    <div class="receipt-icon" aria-hidden="true">✓</div>
+    <h2 id="receipt-title">기록을 남겼어요</h2>
+    <p>서로의 필요를 나눠주셔서 고맙습니다.</p>
+    <div id="receipt-summary" class="receipt-summary"></div>
+    <button id="close-receipt" class="primary-button" type="button">확인</button>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "modu-shelf-prototype-v1";
+    const DEMO_PASSWORD = "admin1234";
+    const seedData = {
+      products: [
+        { id: "cup-ramen", name: "컵라면", price: 1200, stock: 8, emoji: "🍜", image: "" },
+        { id: "snack", name: "감자칩", price: 1700, stock: 6, emoji: "🥔", image: "" },
+        { id: "water", name: "생수 500ml", price: 800, stock: 12, emoji: "💧", image: "" },
+        { id: "chocolate", name: "초콜릿", price: 1000, stock: 5, emoji: "🍫", image: "" }
+      ],
+      bank: { name: "은행 정보를 등록해 주세요", holder: "운영자", number: "운영자 페이지에서 설정" },
+      records: []
+    };
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seedData));
+        return structuredClone(seedData);
+      }
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed.products) || !Array.isArray(parsed.records) || !parsed.bank) {
+        throw new Error("저장된 데이터 형식이 올바르지 않습니다. 운영자에게 문의해 주세요.");
+      }
+      return parsed;
+    }
+
+    let data = loadData();
+    let selectedId = null;
+    let quantity = 1;
+    let payment = "bank";
+    let toastTimer;
+    const $ = (id) => document.getElementById(id);
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function money(value) {
+      return `${Number(value).toLocaleString("ko-KR")}원`;
+    }
+
+    function getSelectedProduct() {
+      return data.products.find((product) => product.id === selectedId) || null;
+    }
+
+    function showToast(message) {
+      $("toast").textContent = message;
+      $("toast").classList.add("show");
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => $("toast").classList.remove("show"), 2600);
+    }
+
+    function isWeekend() {
+      const day = new Date().getDay();
+      return day === 0 || day === 6;
+    }
+
+    function renderProducts() {
+      const container = $("product-list");
+      container.replaceChildren();
+      if (!data.products.length) {
+        container.innerHTML = '<div class="empty-order" style="grid-column:1/-1">현재 등록된 물품이 없습니다.</div>';
+        return;
+      }
+      data.products.forEach((product) => {
+        const soldOut = product.stock <= 0;
+        const card = document.createElement("article");
+        card.className = `product-card${selectedId === product.id ? " is-selected" : ""}${soldOut ? " is-soldout" : ""}`;
+        const picture = product.image
+          ? `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="product-emoji" hidden aria-hidden="true">${escapeHTML(product.emoji || "🛍️")}</span>`
+          : `<span class="product-emoji" aria-hidden="true">${escapeHTML(product.emoji || "🛍️")}</span>`;
+        card.innerHTML = `<div class="product-pic">${picture}</div>
+          <div class="product-body"><p class="product-name">${escapeHTML(product.name)}</p>
+          <div class="product-price">${money(product.price)} <span style="font-size:11px;font-weight:500">/ 개</span></div>
+          <button class="product-action" type="button" ${soldOut ? "disabled" : ""}>${soldOut ? "재고가 없습니다" : selectedId === product.id ? "선택 중" : "이 물품 선택"}</button></div>`;
+        const button = card.querySelector("button");
+        if (!soldOut) button.addEventListener("click", () => selectProduct(product.id));
+        container.append(card);
+      });
+    }
+
+    function selectProduct(id) {
+      selectedId = id;
+      quantity = 1;
+      $("empty-order").hidden = true;
+      $("order-content").hidden = false;
+      renderProducts();
+      renderOrder();
+    }
+
+    function renderOrder() {
+      renderTodayDate();
+      const product = getSelectedProduct();
+      if (!product) {
+        $("empty-order").hidden = false;
+        $("order-content").hidden = true;
+        return;
+      }
+      $("chosen-emoji").textContent = product.emoji || "🛍️";
+      $("chosen-name").textContent = product.name;
+      $("chosen-price").textContent = `${money(product.price)} / 개`;
+      $("quantity-value").textContent = String(quantity);
+      $("quantity-minus").disabled = quantity <= 1;
+      $("quantity-plus").disabled = quantity >= product.stock;
+      $("total-price").textContent = money(product.price * quantity);
+      $("bank-name-display").textContent = data.bank.name;
+      $("bank-holder-display").textContent = data.bank.holder;
+      $("account-display").textContent = data.bank.number;
+
+      const weekend = isWeekend();
+      $("payment-exchange").disabled = weekend;
+      $("weekday-note").hidden = weekend;
+      $("weekend-note").hidden = !weekend;
+      if (weekend && payment === "exchange") setPayment("bank");
+      renderPayment();
+      $("submit-usage").disabled = product.stock < 1;
+    }
+
+    function renderTodayDate() {
+      const today = new Date();
+      $("today-date").textContent = new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      }).format(today);
+      $("today-date").dateTime = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    }
+
+    function setPayment(method) {
+      if (method === "exchange" && isWeekend()) {
+        showToast("주말에는 계좌이체만 이용할 수 있어요.");
+        return;
+      }
+      payment = method;
+      renderPayment();
+    }
+
+    function renderPayment() {
+      const bankSelected = payment === "bank";
+      $("payment-bank").classList.toggle("active", bankSelected);
+      $("payment-bank").setAttribute("aria-pressed", String(bankSelected));
+      $("payment-exchange").classList.toggle("active", !bankSelected);
+      $("payment-exchange").setAttribute("aria-pressed", String(!bankSelected));
+      $("bank-fields").hidden = !bankSelected;
+      $("exchange-fields").hidden = bankSelected;
+    }
+
+    async function copyAccount() {
+      const account = data.bank.number;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(account);
+        } else {
+          const field = document.createElement("textarea");
+          field.value = account;
+          field.setAttribute("readonly", "");
+          field.style.position = "fixed";
+          field.style.opacity = "0";
+          document.body.append(field);
+          field.select();
+          const copied = document.execCommand("copy");
+          field.remove();
+          if (!copied) throw new Error("클립보드 복사 권한이 없습니다.");
+        }
+        showToast("계좌번호를 복사했어요.");
+      } catch (error) {
+        showToast(`복사할 수 없어요: ${error.message}`);
+      }
+    }
+
+    async function submitUsage() {
+      data = loadData();
+      const product = getSelectedProduct();
+      if (!product) {
+        showToast("먼저 이용할 물품을 선택해 주세요.");
+        return;
+      }
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > product.stock) {
+        showToast("선택한 수량을 재고와 다시 확인해 주세요.");
+        renderOrder();
+        return;
+      }
+      if (payment === "exchange" && isWeekend()) {
+        setPayment("bank");
+        showToast("주말에는 계좌이체만 이용할 수 있어요.");
+        return;
+      }
+      const exchangeName = $("exchange-name").value.trim();
+      if (payment === "exchange" && !exchangeName) {
+        $("exchange-name").focus();
+        showToast("교환할 물품 이름을 입력해 주세요.");
+        return;
+      }
+      let photoData = "";
+      const photo = $("exchange-photo").files[0];
+      if (payment === "exchange" && photo) {
+        if (!photo.type.startsWith("image/")) {
+          showToast("이미지 파일을 선택해 주세요.");
+          return;
+        }
+        if (photo.size > 2 * 1024 * 1024) {
+          showToast("사진은 2MB 이하로 선택해 주세요.");
+          return;
+        }
+        photoData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error("사진을 읽지 못했습니다."));
+          reader.readAsDataURL(photo);
+        }).catch((error) => {
+          showToast(error.message);
+          return "";
+        });
+        if (!photoData) return;
+      }
+
+      const record = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+        date: new Date().toISOString(),
+        productId: product.id,
+        productName: product.name,
+        quantity,
+        total: product.price * quantity,
+        method: payment === "bank" ? "계좌이체" : "물물교환",
+        exchangeName: payment === "exchange" ? exchangeName : "",
+        photo: photoData
+      };
+      const previousStock = product.stock;
+      product.stock -= quantity;
+      data.records.unshift(record);
+      try {
+        saveData();
+      } catch (error) {
+        product.stock = previousStock;
+        data.records.shift();
+        showToast("재고와 이용 기록을 저장하지 못했습니다.");
+        return;
+      }
+      $("receipt-summary").innerHTML = `<div><span>이용 물품</span><strong>${escapeHTML(record.productName)}</strong></div>
+        <div><span>수량</span><strong>${record.quantity}개</strong></div>
+        <div><span>총 금액</span><strong>${money(record.total)}</strong></div>
+        <div><span>대가 방법</span><strong>${record.method}</strong></div>
+        ${record.exchangeName ? `<div><span>교환 물품</span><strong>${escapeHTML(record.exchangeName)}</strong></div>` : ""}`;
+      $("receipt-dialog").showModal();
+      $("exchange-name").value = "";
+      $("exchange-photo").value = "";
+      selectedId = null;
+      quantity = 1;
+      payment = "bank";
+      $("order-content").hidden = true;
+      $("empty-order").hidden = false;
+      renderProducts();
+    }
+
+    function showView(name) {
+      $("user-view").hidden = name !== "user";
+      $("login-view").hidden = name !== "login";
+      $("admin-view").hidden = name !== "admin";
+      if (name === "admin") renderAdmin();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderInventory() {
+      const container = $("inventory-list");
+      if (!data.products.length) {
+        container.innerHTML = '<div class="empty-history">등록된 물품이 없습니다.</div>';
+        return;
+      }
+      container.innerHTML = data.products.map((product) => `<div class="inventory-row">
+        <div><strong>${escapeHTML(product.emoji || "🛍️")} ${escapeHTML(product.name)}</strong><div class="inventory-meta">${money(product.price)} · 재고 ${product.stock}개</div></div>
+        <div class="stock-actions"><button type="button" data-stock="-1" data-id="${escapeHTML(product.id)}" ${product.stock <= 0 ? "disabled" : ""} aria-label="${escapeHTML(product.name)} 재고 1개 차감">−1</button><button type="button" data-stock="1" data-id="${escapeHTML(product.id)}" aria-label="${escapeHTML(product.name)} 재고 1개 추가">＋1</button></div>
+        <div class="admin-item-buttons"><button class="secondary-button" type="button" data-edit="${escapeHTML(product.id)}">수정</button><button class="danger-button" type="button" data-delete="${escapeHTML(product.id)}">삭제</button></div>
+      </div>`).join("");
+      container.querySelectorAll("[data-stock]").forEach((button) => button.addEventListener("click", () => {
+        const product = data.products.find((item) => item.id === button.dataset.id);
+        const nextStock = product.stock + Number(button.dataset.stock);
+        if (nextStock < 0) return;
+        product.stock = nextStock;
+        saveData();
+        renderAdmin();
+        renderProducts();
+        renderOrder();
+      }));
+      container.querySelectorAll("[data-edit]").forEach((button) => button.addEventListener("click", () => editProduct(button.dataset.edit)));
+      container.querySelectorAll("[data-delete]").forEach((button) => button.addEventListener("click", () => deleteProduct(button.dataset.delete)));
+    }
+
+    function renderHistory() {
+      $("history-count").textContent = `${data.records.length}건`;
+      const container = $("history-container");
+      if (!data.records.length) {
+        container.innerHTML = '<div class="empty-history">아직 기록된 이용 내역이 없습니다.</div>';
+        return;
+      }
+      container.innerHTML = `<table><thead><tr><th>이용 일시</th><th>물품</th><th>수량</th><th>총 금액</th><th>방법</th><th>교환 내역</th></tr></thead><tbody>
+        ${data.records.map((record) => `<tr><td>${escapeHTML(new Date(record.date).toLocaleString("ko-KR"))}</td>
+          <td>${escapeHTML(record.productName)}</td><td>${record.quantity}개</td><td>${money(record.total)}</td>
+          <td>${escapeHTML(record.method)}</td><td><div class="history-exchange"><span>${escapeHTML(record.exchangeName || "—")}</span>
+            ${record.photo ? `<img class="history-photo" src="${escapeHTML(record.photo)}" alt="첨부된 교환 물품 사진" loading="lazy" decoding="async">` : ""}</div></td></tr>`).join("")}
+        </tbody></table>`;
+    }
+
+    function renderAdmin() {
+      $("admin-date").textContent = new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
+      renderInventory();
+      renderHistory();
+      $("bank-name-input").value = data.bank.name;
+      $("bank-holder-input").value = data.bank.holder;
+      $("bank-number-input").value = data.bank.number;
+    }
+
+    window.addEventListener("storage", (event) => {
+      if (event.key !== STORAGE_KEY || !event.newValue) return;
+      try {
+        const updated = JSON.parse(event.newValue);
+        if (!Array.isArray(updated.products) || !Array.isArray(updated.records) || !updated.bank) return;
+        data = updated;
+        renderProducts();
+        renderOrder();
+        if (!$("admin-view").hidden) renderAdmin();
+      } catch (error) {
+        showToast("다른 탭의 재고 정보를 불러오지 못했습니다.");
+      }
+    });
+
+    function resetProductForm() {
+      $("product-form").reset();
+      $("edit-product-id").value = "";
+      $("product-form-title").textContent = "＋ 물품 등록";
+      $("save-product").textContent = "물품 등록";
+      $("cancel-edit").hidden = true;
+    }
+
+    function editProduct(id) {
+      const product = data.products.find((item) => item.id === id);
+      if (!product) return;
+      $("edit-product-id").value = product.id;
+      $("product-name-input").value = product.name;
+      $("product-price-input").value = String(product.price);
+      $("product-stock-input").value = String(product.stock);
+      $("product-emoji-input").value = product.emoji || "";
+      $("product-emoji-preset").value = Array.from($("product-emoji-preset").options).some((option) => option.value === product.emoji) ? product.emoji : "";
+      $("product-image-input").value = product.image || "";
+      $("product-form-title").textContent = "✎ 물품 수정";
+      $("save-product").textContent = "변경 내용 저장";
+      $("cancel-edit").hidden = false;
+      $("product-name-input").focus();
+    }
+
+    function deleteProduct(id) {
+      const product = data.products.find((item) => item.id === id);
+      if (!product || !window.confirm(`'${product.name}' 물품을 삭제할까요? 기존 이용 기록은 유지됩니다.`)) return;
+      data.products = data.products.filter((item) => item.id !== id);
+      if (selectedId === id) {
+        selectedId = null;
+        $("order-content").hidden = true;
+        $("empty-order").hidden = false;
+      }
+      saveData();
+      renderAdmin();
+      renderProducts();
+      showToast("물품을 삭제했어요.");
+    }
+
+    $("open-admin").addEventListener("click", () => showView("login"));
+    document.querySelectorAll(".back-to-user").forEach((button) => button.addEventListener("click", () => showView("user")));
+    $("login-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if ($("admin-password").value !== DEMO_PASSWORD) {
+        showToast("비밀번호를 확인해 주세요.");
+        $("admin-password").select();
+        return;
+      }
+      $("admin-password").value = "";
+      showView("admin");
+    });
+    $("logout").addEventListener("click", () => showView("user"));
+    $("product-emoji-preset").addEventListener("change", (event) => {
+      $("product-emoji-input").value = event.target.value;
+    });
+    $("product-emoji-input").addEventListener("input", (event) => {
+      const preset = $("product-emoji-preset");
+      preset.value = Array.from(preset.options).some((option) => option.value === event.target.value) ? event.target.value : "";
+    });
+    $("quantity-minus").addEventListener("click", () => {
+      quantity = Math.max(1, quantity - 1);
+      renderOrder();
+    });
+    $("quantity-plus").addEventListener("click", () => {
+      const product = getSelectedProduct();
+      if (product && quantity < product.stock) quantity += 1;
+      renderOrder();
+    });
+    $("payment-bank").addEventListener("click", () => setPayment("bank"));
+    $("payment-exchange").addEventListener("click", () => setPayment("exchange"));
+    $("copy-account").addEventListener("click", copyAccount);
+    $("submit-usage").addEventListener("click", submitUsage);
+    $("close-receipt").addEventListener("click", () => $("receipt-dialog").close());
+
+    $("product-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const id = $("edit-product-id").value;
+      const product = {
+        id: id || (crypto.randomUUID ? crypto.randomUUID() : `product-${Date.now()}`),
+        name: $("product-name-input").value.trim(),
+        price: Number($("product-price-input").value),
+        stock: Number($("product-stock-input").value),
+        emoji: $("product-emoji-input").value.trim() || "🛍️",
+        image: $("product-image-input").value.trim()
+      };
+      if (!product.name || !Number.isSafeInteger(product.price) || product.price < 0 || !Number.isSafeInteger(product.stock) || product.stock < 0) {
+        showToast("물품 이름, 가격, 재고를 올바르게 입력해 주세요.");
+        return;
+      }
+      if (id) {
+        const index = data.products.findIndex((item) => item.id === id);
+        if (index < 0) {
+          showToast("수정할 물품을 찾을 수 없습니다.");
+          return;
+        }
+        data.products[index] = product;
+      } else {
+        data.products.push(product);
+      }
+      saveData();
+      resetProductForm();
+      renderAdmin();
+      renderProducts();
+      renderOrder();
+      showToast(id ? "물품 정보를 수정했어요." : "새 물품을 등록했어요.");
+    });
+    $("cancel-edit").addEventListener("click", resetProductForm);
+    $("bank-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      data.bank = {
+        name: $("bank-name-input").value.trim(),
+        holder: $("bank-holder-input").value.trim(),
+        number: $("bank-number-input").value.trim()
+      };
+      if (!data.bank.name || !data.bank.holder || !data.bank.number) {
+        showToast("은행명, 예금주, 계좌번호를 모두 입력해 주세요.");
+        return;
+      }
+      saveData();
+      renderOrder();
+      showToast("계좌 정보를 저장했어요.");
+    });
+    $("export-data").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `modu-shelf-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      showToast("백업 파일을 다운로드했어요.");
+    });
+
+    renderProducts();
+    renderTodayDate();
+    $("payment-exchange").disabled = isWeekend();
+    $("weekday-note").hidden = isWeekend();
+    $("weekend-note").hidden = !isWeekend();
+  </script>
+</body>
+</html>
